@@ -1,37 +1,81 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Filter } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
 
 const allProducts = [
-  { id: 1, name: "Smartphone X", price: 799.99, image: "/placeholder.svg" },
-  { id: 2, name: "Laptop Pro", price: 1299.99, image: "/placeholder.svg" },
-  { id: 3, name: "Wireless Earbuds", price: 149.99, image: "/placeholder.svg" },
-  { id: 4, name: "4K Smart TV", price: 699.99, image: "/placeholder.svg" },
-  { id: 5, name: "Smartwatch", price: 249.99, image: "/placeholder.svg" },
-  { id: 6, name: "Bluetooth Speaker", price: 79.99, image: "/placeholder.svg" },
-  { id: 7, name: "Gaming Console", price: 499.99, image: "/placeholder.svg" },
-  { id: 8, name: "Tablet", price: 349.99, image: "/placeholder.svg" },
+  { id: 1, name: "Smartphone X", price: 799.99, image: "/placeholder.svg", category: "Smartphones" },
+  { id: 2, name: "Laptop Pro", price: 1299.99, image: "/placeholder.svg", category: "Laptops" },
+  { id: 3, name: "Wireless Earbuds", price: 149.99, image: "/placeholder.svg", category: "Audio" },
+  { id: 4, name: "4K Smart TV", price: 699.99, image: "/placeholder.svg", category: "TVs" },
+  { id: 5, name: "Smartwatch", price: 249.99, image: "/placeholder.svg", category: "Wearables" },
+  { id: 6, name: "Bluetooth Speaker", price: 79.99, image: "/placeholder.svg", category: "Audio" },
+  { id: 7, name: "Gaming Console", price: 499.99, image: "/placeholder.svg", category: "Gaming" },
+  { id: 8, name: "Tablet", price: 349.99, image: "/placeholder.svg", category: "Tablets" },
 ];
+
+const categories = [...new Set(allProducts.map(product => product.category))];
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
+  const [priceRange, setPriceRange] = useState([0, 1500]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
-  const handleSearch = (event) => {
-    const query = event.target.value.toLowerCase();
-    setSearchQuery(query);
-    const filtered = allProducts.filter(product =>
-      product.name.toLowerCase().includes(query)
+  useEffect(() => {
+    filterProducts();
+  }, [searchQuery, priceRange, selectedCategories]);
+
+  const filterProducts = () => {
+    const filtered = allProducts.filter(product => 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      product.price >= priceRange[0] && product.price <= priceRange[1] &&
+      (selectedCategories.length === 0 || selectedCategories.includes(product.category))
     );
     setFilteredProducts(filtered);
+  };
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handlePriceRangeChange = (value) => {
+    setPriceRange(value);
+  };
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategories(prev => 
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <HeroSection />
-      <SearchBar searchQuery={searchQuery} handleSearch={handleSearch} />
+      <div className="flex justify-between items-center mb-8">
+        <SearchBar searchQuery={searchQuery} handleSearch={handleSearch} />
+        <FilterButton
+          priceRange={priceRange}
+          handlePriceRangeChange={handlePriceRangeChange}
+          categories={categories}
+          selectedCategories={selectedCategories}
+          handleCategoryChange={handleCategoryChange}
+        />
+      </div>
       <FeaturedProducts products={filteredProducts} />
       <PromotionalSection />
     </div>
@@ -52,15 +96,68 @@ const HeroSection = () => (
 );
 
 const SearchBar = ({ searchQuery, handleSearch }) => (
-  <section className="mb-8">
-    <Input
-      type="text"
-      placeholder="Search products..."
-      value={searchQuery}
-      onChange={handleSearch}
-      className="w-full max-w-md mx-auto"
-    />
-  </section>
+  <Input
+    type="text"
+    placeholder="Search products..."
+    value={searchQuery}
+    onChange={handleSearch}
+    className="w-full max-w-md"
+  />
+);
+
+const FilterButton = ({ priceRange, handlePriceRangeChange, categories, selectedCategories, handleCategoryChange }) => (
+  <Sheet>
+    <SheetTrigger asChild>
+      <Button variant="outline">
+        <Filter className="mr-2 h-4 w-4" />
+        Filter
+      </Button>
+    </SheetTrigger>
+    <SheetContent>
+      <SheetHeader>
+        <SheetTitle>Filter Products</SheetTitle>
+        <SheetDescription>
+          Adjust filters to refine your product search.
+        </SheetDescription>
+      </SheetHeader>
+      <div className="grid gap-4 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="price-range">Price Range</Label>
+          <Slider
+            id="price-range"
+            min={0}
+            max={1500}
+            step={10}
+            value={priceRange}
+            onValueChange={handlePriceRangeChange}
+            className="w-full"
+          />
+          <div className="flex justify-between text-sm text-gray-500">
+            <span>${priceRange[0]}</span>
+            <span>${priceRange[1]}</span>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Categories</Label>
+          {categories.map(category => (
+            <div key={category} className="flex items-center space-x-2">
+              <Checkbox
+                id={category}
+                checked={selectedCategories.includes(category)}
+                onCheckedChange={() => handleCategoryChange(category)}
+              />
+              <label
+                htmlFor={category}
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {category}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+    </SheetContent>
+  </Sheet>
 );
 
 const FeaturedProducts = ({ products }) => (
@@ -78,6 +175,7 @@ const FeaturedProducts = ({ products }) => (
             <CardContent>
               <CardTitle>{product.name}</CardTitle>
               <p className="text-lg font-semibold">${product.price.toFixed(2)}</p>
+              <p className="text-sm text-gray-500">{product.category}</p>
             </CardContent>
             <CardFooter>
               <Button className="w-full">
