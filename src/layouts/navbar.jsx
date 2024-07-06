@@ -8,8 +8,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { CircleUser, Menu, Package2 } from "lucide-react";
+import { CircleUser, Menu, ShoppingCart, Cpu } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { navItems } from "../App";
 
@@ -19,6 +20,7 @@ const Layout = () => {
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 justify-between">
         <DesktopNav />
         <MobileNav />
+        <SearchBar />
         <UserMenu />
       </header>
       <main className="flex-grow overflow-auto">
@@ -34,8 +36,8 @@ const DesktopNav = () => (
       to="/"
       className="flex items-center gap-2 text-lg font-semibold md:text-base"
     >
-      <Package2 className="h-6 w-6" />
-      <span className="sr-only">Acme Inc</span>
+      <Cpu className="h-6 w-6" />
+      <span>TechMart</span>
     </NavItem>
     {navItems.map((item) => (
       <NavItem key={item.to} to={item.to}>
@@ -59,8 +61,8 @@ const MobileNav = () => (
           to="/"
           className="flex items-center gap-2 text-lg font-semibold"
         >
-          <Package2 className="h-6 w-6" />
-          <span className="sr-only">Acme Inc</span>
+          <Cpu className="h-6 w-6" />
+          <span>TechMart</span>
         </NavItem>
         {navItems.map((item) => (
           <NavItem key={item.to} to={item.to}>
@@ -72,23 +74,36 @@ const MobileNav = () => (
   </Sheet>
 );
 
+const SearchBar = () => (
+  <div className="flex-1 md:flex-initial md:w-1/3">
+    <Input type="search" placeholder="Search products..." className="w-full" />
+  </div>
+);
+
 const UserMenu = () => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="secondary" size="icon" className="rounded-full">
-        <CircleUser className="h-5 w-5" />
-        <span className="sr-only">Toggle user menu</span>
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem>Settings</DropdownMenuItem>
-      <DropdownMenuItem>Support</DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem>Logout</DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
+  <div className="flex items-center gap-4">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="rounded-full">
+          <CircleUser className="h-5 w-5" />
+          <span className="sr-only">Toggle user menu</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Profile</DropdownMenuItem>
+        <DropdownMenuItem>Orders</DropdownMenuItem>
+        <DropdownMenuItem>Settings</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Logout</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    <Button variant="ghost" size="icon" className="rounded-full">
+      <ShoppingCart className="h-5 w-5" />
+      <span className="sr-only">View shopping cart</span>
+    </Button>
+  </div>
 );
 
 const NavItem = ({ to, children, className }) => (
